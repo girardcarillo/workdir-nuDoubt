@@ -1,0 +1,12 @@
+Detector material: 98% LAB, 2% paraffin wax detector.
+Detector: 4m long and 4m in diameter.
+Fibre array: hex z-parallel, 1.5cm fibre pitch.
+Fibre numbering: aaabbb where aaa is the row number and bbb is the column number.
+
+Scattering Length = 2mm
+Absorption Length = 2m
+Scintillation Yield = 9000 photons/MeV
+
+particle gun: (75mm, 75mm, 0mm) random direction
+
+The final number in the file name is the number of events in the file.

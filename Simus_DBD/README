@@ -1,0 +1,21 @@
+Additional information in root output files.
+Photon creation process ("creationID")
+creationID = 0 (Scintillation)
+creationID = 1 (Cherenkov)
+creationID = 2 (Other)
+
+Fibre diameter (3mm)
+Fibre spacing (1cm)
+
+Detector material: 98% LAB, 2% paraffin wax detector.
+Detector: 4m long and 4m in diameter.
+Fibre array: hex z-parallel, 1cm fibre pitch. Fibre diameter = 3mm.
+Fibre numbering: aaabbb where aaa is the row number and bbb is the column number.
+
+Scattering Length = 2mm
+Absorption Length = 2m
+Scintillation Yield = 9000 photons/MeV
+
+particle gun: (75mm, 75mm, 0mm) random direction
+
+The final number in the file name is the number of events in the file.
