@@ -12,6 +12,28 @@
 #include <chrono>
 #include <string>
 
+void Perceptual_Colormap(TH2F *h, Double_t val_cut) {
+  Double_t max     = h->GetMaximum();         // Histogram's maximum
+  Double_t min     = h->GetMinimum();         // Histogram's minimum
+  Double_t per_cut = (val_cut-min)/(max-min); // normalized value of val_cut
+  Double_t eps     = (max-min)*0.00001;       // epsilon
+ 
+  // Definition of the two palettes below and above val_cut
+  const Int_t Number = 4;
+  Double_t Red[Number]   = { 0., 1., 0., 1.};
+  Double_t Green[Number] = { 0., 0., 1., 0.};
+  Double_t Blue[Number]  = { 1., 1., 0., 0.};
+  Double_t Stops[Number] = { 0., per_cut, per_cut+0.03, 1. };
+   
+  Int_t nb= 256;
+  h->SetContour(nb);
+ 
+  TColor::CreateGradientColorTable(Number,Stops,Red,Green,Blue,nb);
+ 
+  // Histogram drawing
+  // h->Draw("colz");
+}
+
 struct EventData {
   int event;
   int fN;
@@ -97,15 +119,20 @@ void DefineCSratio(string path, string fileName, int eventNumber = 0) {
       Y_value = eventData.hity/10.-particleGunY; // conversion in cm - re-centering the particle gun
       Z_value = eventData.hitz/10.-particleGunZ; // conversion in cm - re-centering the particle gun
 
-      // // // rotation or flipping or event if necessary, for display for paper
       // // if (fileName == "2.8MeVgamma50") histogramXY->Fill(X_value, -Y_value);
       // else histogramXY->Fill(X_value, Y_value);
-
+      
+      // rotation or flipping or event if necessary, for display for paper
+      
       // define C/S ratio
-      if (eventData.photonType == 1)
-	Cerenkov->Fill(X_value, Y_value);
-      else if (eventData.photonType == 2)
-	Scintillation->Fill(X_value, Y_value);
+      if (eventData.photonType == 1) {
+	if (fileName == "0.38MeV2xpositron50") Cerenkov->Fill(X_value*f-Y_value*f, X_value*f+Y_value*f);
+      	else Cerenkov->Fill(X_value, Y_value);
+      }
+      else if (eventData.photonType == 2) {
+	if (fileName == "0.38MeV2xpositron50") Scintillation->Fill(X_value*f-Y_value*f, X_value*f+Y_value*f);
+	else Scintillation->Fill(X_value, Y_value);
+      }
 
     }
 
@@ -129,47 +156,10 @@ void DefineCSratio(string path, string fileName, int eventNumber = 0) {
       ratio_value = nchit/nc;
 
       // if(nchit == 0 && nc != 0) heffprojStripY[j]->SetBinContent(binnum, 1e-6);  // small number instead of 0
-      if(ratio_value == 0) ratio->SetBinContent(binnum, 1e-6);  // small number instead of 0
+      if(ratio_value == 0) ratio->SetBinContent(binnum, 1.1e-5);  // small number instead of 0
 
     }
   }
-
-  // // tests visus
-
-  // TCanvas *c1 = new TCanvas("c1", "c1",70,64,936,1016);
-  // gStyle->SetOptStat(0);
-  // c1->Range(-82.67568,-87.5443,94.02703,87.36709);
-  // c1->SetFillColor(0);
-  // c1->SetBorderMode(0);
-  // c1->SetBorderSize(2);
-  // c1->SetLogz();
-  // c1->SetLeftMargin(0.07173447);
-  // c1->SetRightMargin(0.1359743);
-  // c1->SetFrameBorderMode(0);
-  // c1->SetFrameBorderMode(0);
-
-  // Cerenkov->SetTitle(eventTitle);
-  // // c1->Divide(1,2);
-  // // c1->cd(1);
-  // gPad->SetLogz();
-
-  // Cerenkov->GetZaxis()->SetRangeUser(1e-3,1);
-
-  // Cerenkov->Draw("colz");
-  // // Cerenkov->GetZaxis()->SetTitleOffset(10);
-  // // Cerenkov->GetZaxis()->SetTitleSize(0.1);
-  // // c1->cd(2);
-  // // gPad->SetLogz();
-  // // Scintillation->Draw("colz");
-  // gStyle->SetPalette(kGreenPink);
-
-  // TPaletteAxis *palette = new TPaletteAxis(72.27027,-70,80.21622,70,Cerenkov);
-  // palette->SetLabelColor(1);
-  // palette->SetLabelFont(42);
-  // palette->SetLabelOffset(0.005);
-  // palette->SetLabelSize(0.035);
-  // palette->SetTitleOffset(1);
-  // palette->SetTitleSize(0.035);
 
   /////////////////////////// Visualization
 
@@ -196,12 +186,12 @@ void DefineCSratio(string path, string fileName, int eventNumber = 0) {
     c1->SetBottomMargin(0.009752438);
   }
 
-  // c1->SetFillColorAlpha(1,0.);
-
+  c1->SetFillColorAlpha(1,0.);
+  
   // gPad->SetLogz();
 
   // c1->SetGrayscale();
-  gStyle->SetPalette(kColorPrintableOnGrey);
+  // gStyle->SetPalette(kColorPrintableOnGrey);
 
   // TColor::InvertPalette();
 
@@ -271,8 +261,9 @@ void DefineCSratio(string path, string fileName, int eventNumber = 0) {
   ratio->GetXaxis()->SetNdivisions(6);
   ratio->GetYaxis()->SetNdivisions(6);
   ratio->GetZaxis()->SetNdivisions(4);
-
-  ratio->GetZaxis()->SetRangeUser(1e-7, 1);
+  
+  Perceptual_Colormap(ratio, 0.);
+  ratio->GetZaxis()->SetRangeUser(0, 0.3);
 
   ratio->Draw("colz");
   if (fileName != "2.8MeVelectron50") ratio->Draw("col");

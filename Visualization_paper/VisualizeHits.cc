@@ -29,7 +29,7 @@ void VisualizeHits(string path, string fileName, int eventNumber = 0) {
   gStyle->SetOptStat(0);
 
   cout << "remettre bon fiber pitch" << endl;
-  double fiberPitch = 15.; // mm
+  double fiberPitch = 10.; // mm
   // double fiberPitch = 10.; // mm
   double particleGunX = 7.5; // mm
   double particleGunY = 7.5; // mm
