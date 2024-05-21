@@ -26,7 +26,7 @@ void DefineCSratio(string path, string fileName, int eventNumber = 0) {
   else if (fileName == "2.8MeVgamma50") eventTitle = "gamma 2.8 MeV";
   else if (fileName == "1.78MeVpositron50") eventTitle = "single positron 1.78 MeV";
   else if (fileName == "0.38MeV2xpositron50") eventTitle = "two positrons 0.38 MeV each";
-  
+
   gStyle->SetOptStat(0);
 
   double fiberPitch = 10.; // mm
@@ -34,7 +34,7 @@ void DefineCSratio(string path, string fileName, int eventNumber = 0) {
   double particleGunX = 7.5; // mm
   double particleGunY = 7.5; // mm
   double particleGunZ = 0.; // mm
-  
+
   double Light_Yield = 9000.; // PE/MeV
 
   string file = path + fileName + ".root";
@@ -50,7 +50,7 @@ void DefineCSratio(string path, string fileName, int eventNumber = 0) {
   // Get the number of entries in the tree
   // Ensure that the tree is not empty
   int entries = tree ? tree->GetEntries() : 0;
-  
+
   EventData eventData;
 
   // Set branch addresses for the tree
@@ -67,19 +67,20 @@ void DefineCSratio(string path, string fileName, int eventNumber = 0) {
 
   double minX = -70.;
   double maxX = 70.;
-  
+
   double minY = -70.;
   double maxY = 70.;
-    
+
   double minZ = -70.;
   double maxZ = 70.;
 
   int nbinsX = (maxX - minX) / fiberPitch * 10.;
   int nbinsY = (maxY - minY) / fiberPitch * 10.;
-  
+
   // Create a 2D histograms
   TH2F *Cerenkov = new TH2F("Cerenkov", "", nbinsX, minX, maxX, nbinsY, minY, maxY); // for electron zoom
   TH2F *Scintillation = new TH2F("Scintillation", "", nbinsX, minX, maxX, nbinsY, minY, maxY); // for electron zoom
+  TH2F *ratio = new TH2F("Ratio", "", nbinsX, minX, maxX, nbinsY, minY, maxY); // for electron zoom
 
   double f = sqrt(2.)/2.;
   double X_value = 0.;
@@ -105,173 +106,221 @@ void DefineCSratio(string path, string fileName, int eventNumber = 0) {
 	Cerenkov->Fill(X_value, Y_value);
       else if (eventData.photonType == 2)
 	Scintillation->Fill(X_value, Y_value);
-      
+
     }
 
   }
 
   // Cerenkov->Divide(Scintillation);
 
-  // tests visus
+  ratio = (TH2F*)Cerenkov->Clone("ratio");
+  ratio->Divide(Scintillation);
 
-  TCanvas *c1 = new TCanvas("c1", "c1",5,77,936,1358);
-  c1->Range(0,0,1,1);
-  Cerenkov->SetTitle(eventTitle);
-  c1->Divide(1,2);
-  c1->cd(1);
-  gPad->SetLogz();
-  Cerenkov->GetZaxis()->SetRangeUser(1e-2,5e2);
-  Cerenkov->Draw("colz");
-  c1->cd(2);
-  gPad->SetLogz();
-  Scintillation->Draw("colz");
-  
+  int binnum = 0;
+  double nchit = 0.;
+  double nc = 0.;
+  double ratio_value = 0.;
+
+  for(int k=0;k<ratio->GetNbinsX(); k++){
+    for(int l=0;l<ratio->GetNbinsY(); l++){
+      binnum = ratio->GetBin(k+1, l+1);
+      nchit = Cerenkov->GetBinContent(binnum);
+      nc = Scintillation->GetBinContent(binnum);
+      ratio_value = nchit/nc;
+
+      // if(nchit == 0 && nc != 0) heffprojStripY[j]->SetBinContent(binnum, 1e-6);  // small number instead of 0
+      if(ratio_value == 0) ratio->SetBinContent(binnum, 1e-7);  // small number instead of 0
+
+    }
+  }
+
+  // // tests visus
+
+  // TCanvas *c1 = new TCanvas("c1", "c1",70,64,936,1016);
+  // gStyle->SetOptStat(0);
+  // c1->Range(-82.67568,-87.5443,94.02703,87.36709);
+  // c1->SetFillColor(0);
+  // c1->SetBorderMode(0);
+  // c1->SetBorderSize(2);
+  // c1->SetLogz();
+  // c1->SetLeftMargin(0.07173447);
+  // c1->SetRightMargin(0.1359743);
+  // c1->SetFrameBorderMode(0);
+  // c1->SetFrameBorderMode(0);
+
+  // Cerenkov->SetTitle(eventTitle);
+  // // c1->Divide(1,2);
+  // // c1->cd(1);
+  // gPad->SetLogz();
+
+  // Cerenkov->GetZaxis()->SetRangeUser(1e-3,1);
+
+  // Cerenkov->Draw("colz");
+  // // Cerenkov->GetZaxis()->SetTitleOffset(10);
+  // // Cerenkov->GetZaxis()->SetTitleSize(0.1);
+  // // c1->cd(2);
+  // // gPad->SetLogz();
+  // // Scintillation->Draw("colz");
+  // gStyle->SetPalette(kGreenPink);
+
+  // TPaletteAxis *palette = new TPaletteAxis(72.27027,-70,80.21622,70,Cerenkov);
+  // palette->SetLabelColor(1);
+  // palette->SetLabelFont(42);
+  // palette->SetLabelOffset(0.005);
+  // palette->SetLabelSize(0.035);
+  // palette->SetTitleOffset(1);
+  // palette->SetTitleSize(0.035);
+
   /////////////////////////// Visualization
 
   // plot C/S
-  
+
+  // to comment: changed because worked on personal laptop and dimensions changed
+  TCanvas *c1 = new TCanvas("c1", "c1",70,64,1081,1016);
+  // to uncomment: changed because worked on personal laptop and dimensions changed
   // TCanvas *c1 = new TCanvas("c1", "c1",0,72,1368,1368);
-  // c1->SetLeftMargin(0.1874085);
-  // c1->SetRightMargin(0.005856515);
-  // c1->SetTopMargin(0.009752438);
-  // c1->SetBottomMargin(0.1642911);
+  /////////////////////////////////////////////////////
 
-  // if (fileName == "2.8MeVgamma50" || fileName == "0.38MeV2xpositron50")  {
-  //   c1->SetLeftMargin(0.005856515);
-  //   c1->SetRightMargin(0.1874085);
-  // }
+  c1->SetLeftMargin(0.1874085);
+  c1->SetRightMargin(0.005856515);
+  c1->SetTopMargin(0.009752438);
+  c1->SetBottomMargin(0.1642911);
 
-  // if (fileName == "2.8MeVgamma50" || fileName == "2.8MeVelectron50")  {
-  //   c1->SetTopMargin(0.1642911);
-  //   c1->SetBottomMargin(0.009752438);
-  // }
+  if (fileName == "2.8MeVgamma50" || fileName == "0.38MeV2xpositron50")  {
+    c1->SetLeftMargin(0.005856515);
+    c1->SetRightMargin(0.1874085);
+  }
 
-  // // c1->SetFillColorAlpha(1,0.);
+  if (fileName == "2.8MeVgamma50" || fileName == "2.8MeVelectron50")  {
+    c1->SetTopMargin(0.1642911);
+    c1->SetBottomMargin(0.009752438);
+  }
+
+  // c1->SetFillColorAlpha(1,0.);
 
   // gPad->SetLogz();
 
-  // // c1->SetGrayscale();
-  gStyle->SetPalette(kSunset);
+  // c1->SetGrayscale();
+  gStyle->SetPalette(kCandy);
 
-  // // TColor::InvertPalette();
+  // TColor::InvertPalette();
 
-  // // Set axis titles
-  // // Cerenkov->SetTitle(eventTitle);
-  // Cerenkov->GetXaxis()->SetTitle("x (cm)");
-  // Cerenkov->GetYaxis()->SetTitle("y (cm)");
-  // Cerenkov->GetZaxis()->SetTitle("");
-  // // Cerenkov->GetZaxis()->SetTitle("Hits on fibres");
+  // Set axis titles
+  // ratio->SetTitle(eventTitle);
+  ratio->GetXaxis()->SetTitle("x (cm)");
+  ratio->GetYaxis()->SetTitle("y (cm)");
+  ratio->GetZaxis()->SetTitle("");
+  // ratio->GetZaxis()->SetTitle("Hits on fibres");
 
-  // TGaxis::SetMaxDigits(10);
+  TGaxis::SetMaxDigits(10);
 
-  // // gPad->SetGridy();
-  // // gPad->SetGridx();
-  // // gPad->SetFrameLineColor(kGray+3);
-  // gPad->SetFrameLineWidth(2);
+  // gPad->SetGridy();
+  // gPad->SetGridx();
+  // gPad->SetFrameLineColor(kGray+3);
+  gPad->SetFrameLineWidth(2);
 
-  // double titleSize = 0.07;
+  double titleSize = 0.07;
 
-  // Cerenkov->GetXaxis()->SetAxisColor(gPad->GetFrameLineColor());
-  // Cerenkov->GetYaxis()->SetAxisColor(gPad->GetFrameLineColor());
-  
-  // Cerenkov->GetXaxis()->SetTitleColor(gPad->GetFrameLineColor());
-  // Cerenkov->GetXaxis()->SetLabelColor(gPad->GetFrameLineColor());
-  // Cerenkov->GetXaxis()->SetAxisColor(gPad->GetFrameLineColor());
-  // Cerenkov->GetXaxis()->SetLabelFont(42);
-  // Cerenkov->GetXaxis()->SetTitleOffset(1.);
-  // Cerenkov->GetXaxis()->CenterTitle(1);
-  // Cerenkov->GetXaxis()->SetTickLength(0.02);
-  // if (fileName == "2.8MeVgamma50" || fileName == "2.8MeVelectron50")  {
-  //   Cerenkov->GetXaxis()->SetTitleSize(0.);
-  // }
-  // else {
-  //   Cerenkov->GetXaxis()->SetTitleSize(titleSize);
-  // }
-  // Cerenkov->GetXaxis()->SetLabelSize(Cerenkov->GetXaxis()->GetTitleSize());
-  // Cerenkov->GetXaxis()->SetLabelSize(Cerenkov->GetXaxis()->GetTitleSize());
-  // Cerenkov->GetXaxis()->SetTitleFont(42);
+  ratio->GetXaxis()->SetAxisColor(gPad->GetFrameLineColor());
+  ratio->GetYaxis()->SetAxisColor(gPad->GetFrameLineColor());
 
+  ratio->GetXaxis()->SetTitleColor(gPad->GetFrameLineColor());
+  ratio->GetXaxis()->SetLabelColor(gPad->GetFrameLineColor());
+  ratio->GetXaxis()->SetAxisColor(gPad->GetFrameLineColor());
+  ratio->GetXaxis()->SetLabelFont(42);
+  ratio->GetXaxis()->SetTitleOffset(1.);
+  ratio->GetXaxis()->CenterTitle(1);
+  ratio->GetXaxis()->SetTickLength(0.02);
+  if (fileName == "2.8MeVgamma50" || fileName == "2.8MeVelectron50")  {
+    ratio->GetXaxis()->SetTitleSize(0.);
+  }
+  else {
+    ratio->GetXaxis()->SetTitleSize(titleSize);
+  }
+  ratio->GetXaxis()->SetLabelSize(ratio->GetXaxis()->GetTitleSize());
+  ratio->GetXaxis()->SetLabelSize(ratio->GetXaxis()->GetTitleSize());
+  ratio->GetXaxis()->SetTitleFont(42);
 
-  // Cerenkov->GetYaxis()->SetTitleColor(gPad->GetFrameLineColor());
-  // Cerenkov->GetYaxis()->SetLabelColor(gPad->GetFrameLineColor());
-  // Cerenkov->GetYaxis()->SetAxisColor(gPad->GetFrameLineColor());
-  // Cerenkov->GetYaxis()->SetLabelFont(42);
-  // Cerenkov->GetYaxis()->SetTitleOffset(1.);
-  // Cerenkov->GetYaxis()->CenterTitle(1);
-  // Cerenkov->GetYaxis()->SetTickLength(Cerenkov->GetXaxis()->GetTickLength());
-  // if (fileName == "2.8MeVgamma50" || fileName == "0.38MeV2xpositron50")  {
-  //   Cerenkov->GetYaxis()->SetTitleSize(0.);
-  // }
-  // else {
-  //   Cerenkov->GetYaxis()->SetTitleSize(titleSize);
-  // }
-  // Cerenkov->GetYaxis()->SetLabelSize(Cerenkov->GetYaxis()->GetTitleSize());
-  // Cerenkov->GetYaxis()->SetTitleFont(42);
-  
-  // Cerenkov->GetZaxis()->SetTitleColor(gPad->GetFrameLineColor());
-  // Cerenkov->GetZaxis()->SetLabelColor(gPad->GetFrameLineColor());
-  // Cerenkov->GetZaxis()->SetAxisColor(gPad->GetFrameLineColor());
-  // Cerenkov->GetZaxis()->SetLabelFont(42);
-  // Cerenkov->GetZaxis()->SetTitleOffset(0.1);
-  // Cerenkov->GetZaxis()->CenterTitle(1);
-  // Cerenkov->GetZaxis()->SetTickLength(Cerenkov->GetXaxis()->GetTickLength());
-  // Cerenkov->GetZaxis()->SetTitleSize(titleSize);
-  // Cerenkov->GetZaxis()->SetLabelSize(titleSize-0.02);
-  // Cerenkov->GetZaxis()->SetTitleFont(42);
-  
-  // Cerenkov->GetXaxis()->SetNdivisions(6);
-  // Cerenkov->GetYaxis()->SetNdivisions(6);
+  ratio->GetYaxis()->SetTitleColor(gPad->GetFrameLineColor());
+  ratio->GetYaxis()->SetLabelColor(gPad->GetFrameLineColor());
+  ratio->GetYaxis()->SetAxisColor(gPad->GetFrameLineColor());
+  ratio->GetYaxis()->SetLabelFont(42);
+  ratio->GetYaxis()->SetTitleOffset(1.);
+  ratio->GetYaxis()->CenterTitle(1);
+  ratio->GetYaxis()->SetTickLength(ratio->GetXaxis()->GetTickLength());
+  if (fileName == "2.8MeVgamma50" || fileName == "0.38MeV2xpositron50")  {
+    ratio->GetYaxis()->SetTitleSize(0.);
+  }
+  else {
+    ratio->GetYaxis()->SetTitleSize(titleSize);
+  }
+  ratio->GetYaxis()->SetLabelSize(ratio->GetYaxis()->GetTitleSize());
+  ratio->GetYaxis()->SetTitleFont(42);
 
-  // Cerenkov->GetZaxis()->SetRangeUser(1,3.5e3);
+  ratio->GetZaxis()->SetTitleColor(gPad->GetFrameLineColor());
+  ratio->GetZaxis()->SetLabelColor(gPad->GetFrameLineColor());
+  ratio->GetZaxis()->SetAxisColor(gPad->GetFrameLineColor());
+  ratio->GetZaxis()->SetLabelFont(42);
+  ratio->GetZaxis()->SetTitleOffset(0.1);
+  ratio->GetZaxis()->CenterTitle(1);
+  ratio->GetZaxis()->SetTickLength(ratio->GetXaxis()->GetTickLength());
+  ratio->GetZaxis()->SetTitleSize(titleSize);
+  ratio->GetZaxis()->SetLabelSize(titleSize-0.02);
+  ratio->GetZaxis()->SetTitleFont(42);
 
-  // Cerenkov->Draw("colz");
-  // if (fileName != "2.8MeVelectron50") Cerenkov->Draw("col");
+  ratio->GetXaxis()->SetNdivisions(6);
+  ratio->GetYaxis()->SetNdivisions(6);
 
-  // gStyle->SetLineStyleString(11,"200 100");
-  
-  // TLine *line = new TLine(minX, 0, maxX, 0);
-  // line->SetLineStyle(9);
-  // line->SetLineWidth(3);
-  // line->SetLineColor(kGray+1);
-  // line->Draw("SAME");
-  
-  // TLine *line2 = new TLine(0, minY, 0, maxY);
-  // line2->SetLineStyle(line->GetLineStyle());
-  // line2->SetLineWidth(line->GetLineWidth());
-  // line2->SetLineColor(line->GetLineColor());
-  // line2->Draw("SAME");
+  ratio->GetZaxis()->SetRangeUser(1e-8,1);
 
-  // if (fileName == "2.8MeVelectron50") {
-  //   TPaveText *pt = new TPaveText(-14.6,-39.3,14.9,-33.1);
-  //   pt->AddText("Hits on fibres");
-  //   pt->SetTextSize(titleSize-0.01);
-  //   pt->SetTextFont(Cerenkov->GetXaxis()->GetTitleFont());
-  //   pt->SetTextColor(Cerenkov->GetXaxis()->GetTitleColor());
-  //   pt->SetFillColor(0);
-  //   pt->Draw("SAME");
-  // }
+  ratio->Draw("colz");
+  if (fileName != "2.8MeVelectron50") ratio->Draw("col");
 
-  // double x1_palette = -53.5;
-  // double y1_palette = -53.5;
-  // double x2_palette = 53.8;
-  // double y2_palette = -42.8;
+  gStyle->SetLineStyleString(11,"200 100");
 
-  // auto palette2 = new TPaletteAxis(x1_palette, y1_palette, x2_palette, y2_palette, Cerenkov);
-  // Cerenkov->GetListOfFunctions()->Add(palette2);
+  TLine *line = new TLine(minX, 0, maxX, 0);
+  line->SetLineStyle(9);
+  line->SetLineWidth(3);
+  line->SetLineColor(kGray+1);
+  line->Draw("SAME");
 
-  // // // draw contours of palette
-  // // double boxThickness = 0.3;
-  // // TBox *box = new TBox(x1_palette+boxThickness, y1_palette-boxThickness, x2_palette+boxThickness, y2_palette+boxThickness);
-  // // box->SetFillColorAlpha(1,0.);
-  // // box->SetLineColor(1);
-  // // box->SetLineWidth(1);
-  // // box->Draw("same");
+  TLine *line2 = new TLine(0, minY, 0, maxY);
+  line2->SetLineStyle(line->GetLineStyle());
+  line2->SetLineWidth(line->GetLineWidth());
+  line2->SetLineColor(line->GetLineColor());
+  line2->Draw("SAME");
 
-  // palette2->Draw("same");
+  if (fileName == "2.8MeVelectron50") {
+    TPaveText *pt = new TPaveText(-14.6,-39.3,14.9,-33.1);
+    pt->AddText("Hits on fibres");
+    pt->SetTextSize(titleSize-0.01);
+    pt->SetTextFont(ratio->GetXaxis()->GetTitleFont());
+    pt->SetTextColor(ratio->GetXaxis()->GetTitleColor());
+    pt->SetFillColor(0);
+    pt->Draw("SAME");
+  }
 
-  TString OutputPngFile_XY = "plots/Visu_event_CSratio_" + fileName + "_event" + to_string(eventNumber) + ".png";
-  // TString OutputPdfFile_XY = "plots/Visu_event_CSratio_" + fileName + "_event" + to_string(eventNumber) + ".pdf";
-  c1->SaveAs(OutputPngFile_XY);
-  // c1->SaveAs(OutputPdfFile_XY);
-  
+  double x1_palette = -53.5;
+  double y1_palette = -53.5;
+  double x2_palette = 53.8;
+  double y2_palette = -42.8;
+
+  auto palette2 = new TPaletteAxis(x1_palette, y1_palette, x2_palette, y2_palette, ratio);
+  ratio->GetListOfFunctions()->Add(palette2);
+
+  // // draw contours of palette
+  // double boxThickness = 0.3;
+  // TBox *box = new TBox(x1_palette+boxThickness, y1_palette-boxThickness, x2_palette+boxThickness, y2_palette+boxThickness);
+  // box->SetFillColorAlpha(1,0.);
+  // box->SetLineColor(1);
+  // box->SetLineWidth(1);
+  // box->Draw("same");
+
+  palette2->Draw("same");
+
+  // TString OutputPngFile_XY = "plots/Visu_event_CSratio_" + fileName + "_event" + to_string(eventNumber) + ".png";
+  // // TString OutputPdfFile_XY = "plots/Visu_event_CSratio_" + fileName + "_event" + to_string(eventNumber) + ".pdf";
+  // c1->SaveAs(OutputPngFile_XY);
+  // // c1->SaveAs(OutputPdfFile_XY);
+
 }
