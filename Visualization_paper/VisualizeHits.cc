@@ -123,7 +123,7 @@ void VisualizeHits(string path, string fileName, int eventNumber = 0) {
     c1->SetBottomMargin(0.009752438);
   }
 
-  // c1->SetFillColorAlpha(1,0.);
+  c1->SetFillColorAlpha(1,0.);
 
   gPad->SetLogz();
 
