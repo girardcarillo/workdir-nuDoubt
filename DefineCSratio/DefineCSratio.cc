@@ -310,9 +310,9 @@ void DefineCSratio(string path, string fileName, int eventNumber = 0) {
 
   palette2->Draw("same");
 
-  // TString OutputPngFile_XY = "plots/Visu_event_CSratio_" + fileName + "_event" + to_string(eventNumber) + ".png";
-  TString OutputPdfFile_XY = "plots/Visu_event_CSratio_" + fileName + "_event" + to_string(eventNumber) + ".pdf";
-  // c1->SaveAs(OutputPngFile_XY);
-  c1->SaveAs(OutputPdfFile_XY);
+  TString OutputPngFile_XY = "plots/Visu_event_CSratio_" + fileName + "_event" + to_string(eventNumber) + ".png";
+  // TString OutputPdfFile_XY = "plots/Visu_event_CSratio_" + fileName + "_event" + to_string(eventNumber) + ".pdf";
+  c1->SaveAs(OutputPngFile_XY);
+  // c1->SaveAs(OutputPdfFile_XY);
 
 }
