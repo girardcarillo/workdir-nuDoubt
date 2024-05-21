@@ -129,7 +129,7 @@ void DefineCSratio(string path, string fileName, int eventNumber = 0) {
       ratio_value = nchit/nc;
 
       // if(nchit == 0 && nc != 0) heffprojStripY[j]->SetBinContent(binnum, 1e-6);  // small number instead of 0
-      if(ratio_value == 0) ratio->SetBinContent(binnum, 1e-7);  // small number instead of 0
+      if(ratio_value == 0) ratio->SetBinContent(binnum, 1e-6);  // small number instead of 0
 
     }
   }
@@ -176,9 +176,9 @@ void DefineCSratio(string path, string fileName, int eventNumber = 0) {
   // plot C/S
 
   // to comment: changed because worked on personal laptop and dimensions changed
-  TCanvas *c1 = new TCanvas("c1", "c1",70,64,1081,1016);
+  // TCanvas *c1 = new TCanvas("c1", "c1",70,64,1081,1016);
   // to uncomment: changed because worked on personal laptop and dimensions changed
-  // TCanvas *c1 = new TCanvas("c1", "c1",0,72,1368,1368);
+  TCanvas *c1 = new TCanvas("c1", "c1",0,72,1368,1368);
   /////////////////////////////////////////////////////
 
   c1->SetLeftMargin(0.1874085);
@@ -201,7 +201,7 @@ void DefineCSratio(string path, string fileName, int eventNumber = 0) {
   // gPad->SetLogz();
 
   // c1->SetGrayscale();
-  gStyle->SetPalette(kCandy);
+  gStyle->SetPalette(kColorPrintableOnGrey);
 
   // TColor::InvertPalette();
 
@@ -270,8 +270,9 @@ void DefineCSratio(string path, string fileName, int eventNumber = 0) {
 
   ratio->GetXaxis()->SetNdivisions(6);
   ratio->GetYaxis()->SetNdivisions(6);
+  ratio->GetZaxis()->SetNdivisions(4);
 
-  ratio->GetZaxis()->SetRangeUser(1e-8,1);
+  ratio->GetZaxis()->SetRangeUser(1e-7, 1);
 
   ratio->Draw("colz");
   if (fileName != "2.8MeVelectron50") ratio->Draw("col");
@@ -319,8 +320,8 @@ void DefineCSratio(string path, string fileName, int eventNumber = 0) {
   palette2->Draw("same");
 
   // TString OutputPngFile_XY = "plots/Visu_event_CSratio_" + fileName + "_event" + to_string(eventNumber) + ".png";
-  // // TString OutputPdfFile_XY = "plots/Visu_event_CSratio_" + fileName + "_event" + to_string(eventNumber) + ".pdf";
+  TString OutputPdfFile_XY = "plots/Visu_event_CSratio_" + fileName + "_event" + to_string(eventNumber) + ".pdf";
   // c1->SaveAs(OutputPngFile_XY);
-  // // c1->SaveAs(OutputPdfFile_XY);
+  c1->SaveAs(OutputPdfFile_XY);
 
 }
