@@ -28,12 +28,20 @@ void VisualizeHits(string path, string fileName, int eventNumber = 0) {
   
   gStyle->SetOptStat(0);
 
-  cout << "remettre bon fiber pitch" << endl;
   double fiberPitch = 10.; // mm
-  // double fiberPitch = 10.; // mm
-  double particleGunX = 7.5; // mm
-  double particleGunY = 7.5; // mm
+
+  // double particleGunX = 7.5; // mm
+  // double particleGunY = 7.5; // mm
+  // double particleGunZ = 0.; // mm
+  
+  cout << "remettre le bon particle gun pour sims Susie" << endl;
+  double particleGunX = 6.2/10.; // mm
+  double particleGunY = 4.2/10.; // mm
   double particleGunZ = 0.; // mm
+
+  // double particleGunX = 6.2; // mm
+  // double particleGunY = 4.2; // mm
+  // double particleGunZ = 0.; // mm
   
   double Light_Yield = 9000.; // PE/MeV
 
@@ -53,16 +61,29 @@ void VisualizeHits(string path, string fileName, int eventNumber = 0) {
   
   EventData eventData;
 
+  // Set the branch status to 0 for all branches
+  tree->SetBranchStatus("*", 0);
+
+  // Enable the branches we need
+  tree->SetBranchStatus("fEvent", 1);
+  tree->SetBranchStatus("fX", 1);
+  tree->SetBranchStatus("fY", 1);
+  
   // Set branch addresses for the tree
-  tree->SetBranchAddress("Event_Number", &eventData.event);
-  tree->SetBranchAddress("fibreX", &eventData.fiberx);
-  tree->SetBranchAddress("fibreY", &eventData.fibery);
-  tree->SetBranchAddress("fibreZ", &eventData.fiberz);
-  tree->SetBranchAddress("fibreNumber", &eventData.fN);
-  tree->SetBranchAddress("Hit_X", &eventData.hitx);
-  tree->SetBranchAddress("Hit_Y", &eventData.hity);
-  tree->SetBranchAddress("Hit_Z", &eventData.hitz);
-  tree->SetBranchAddress("Time_ns", &eventData.time);
+  tree->SetBranchAddress("fEvent", &eventData.event);
+  tree->SetBranchAddress("fX", &eventData.hitx);
+  tree->SetBranchAddress("fY", &eventData.hity);
+
+  // // Set branch addresses for the tree
+  // tree->SetBranchAddress("Event_Number", &eventData.event);
+  // tree->SetBranchAddress("fibreX", &eventData.fiberx);
+  // tree->SetBranchAddress("fibreY", &eventData.fibery);
+  // tree->SetBranchAddress("fibreZ", &eventData.fiberz);
+  // tree->SetBranchAddress("fibreNumber", &eventData.fN);
+  // tree->SetBranchAddress("Hit_X", &eventData.hitx);
+  // tree->SetBranchAddress("Hit_Y", &eventData.hity);
+  // tree->SetBranchAddress("Hit_Z", &eventData.hitz);
+  // tree->SetBranchAddress("Time_ns", &eventData.time);
 
   double minX = -70.;
   double maxX = 70.;
@@ -84,25 +105,38 @@ void VisualizeHits(string path, string fileName, int eventNumber = 0) {
   double Y_value = 0.;
   double Z_value = 0.;
 
-  // Loop over entries and fill the histogram
-  for (int i = 0; i < entries; i++) {
-    tree->GetEntry(i);
+  // // Loop over entries and fill the histogram
+  // for (int i = 0; i < entries; i++) {
+  //   tree->GetEntry(i);
 
-    if (eventData.event == eventNumber) {
+  //   if (eventData.event == eventNumber) {
 
-      X_value = eventData.hitx/10.-particleGunX; // conversion in cm - re-centering the particle gun
-      Y_value = eventData.hity/10.-particleGunY; // conversion in cm - re-centering the particle gun
-      Z_value = eventData.hitz/10.-particleGunZ; // conversion in cm - re-centering the particle gun
+  //     X_value = eventData.hitx/10.-particleGunX; // conversion in cm - re-centering the particle gun
+  //     Y_value = eventData.hity/10.-particleGunY; // conversion in cm - re-centering the particle gun
+  //     Z_value = eventData.hitz/10.-particleGunZ; // conversion in cm - re-centering the particle gun
 
-      // // rotation or flipping or event if necessary, for display for paper
-      // if (fileName == "2.8MeVgamma50") histogramXY->Fill(X_value, -Y_value);
-      if (fileName == "0.38MeV2xpositron50") histogramXY->Fill(X_value*f-Y_value*f, X_value*f+Y_value*f);
-      else histogramXY->Fill(X_value, Y_value);
+  //     // // rotation or flipping or event if necessary, for display for paper
+  //     // if (fileName == "2.8MeVgamma50") histogramXY->Fill(X_value, -Y_value);
+  //     histogramXY->Fill(X_value, Y_value);
 
-    }
+  //     // cout << X_value << " " << Y_value << " " << Z_value << endl;
+	
+  //     // if (fileName == "0.38MeV2xpositron50") histogramXY->Fill(X_value*f-Y_value*f, X_value*f+Y_value*f);
+  //     // else histogramXY->Fill(X_value, Y_value);
 
-  }
+  //   }
+
+  //   if (eventData.event == eventNumber+1) break;
+    
+  // }
   
+  // Use TTree::Draw to fill the histogram
+  TString drawCommand = Form("(fY/10.-%f):(fX/10.-%f)", particleGunY, particleGunX);
+  TString cutCommand = Form("fEvent==%d", eventNumber);
+  
+  // Draw the selected events into the histogram
+  tree->Draw(drawCommand + ">>histogramXY", cutCommand, "colz");
+
   /////////////////////////// Visualization
 
   // plot XY 
@@ -123,7 +157,7 @@ void VisualizeHits(string path, string fileName, int eventNumber = 0) {
     c1->SetBottomMargin(0.009752438);
   }
 
-  c1->SetFillColorAlpha(1,0.);
+  // c1->SetFillColorAlpha(1,0.);
 
   gPad->SetLogz();
 
@@ -247,8 +281,8 @@ void VisualizeHits(string path, string fileName, int eventNumber = 0) {
   palette2->Draw("same");
 
   TString OutputPngFile_XY = "plots/Visu_event_XY_" + fileName + "_event" + to_string(eventNumber) + ".png";
-  TString OutputPdfFile_XY = "plots/Visu_event_XY_" + fileName + "_event" + to_string(eventNumber) + ".pdf";
   c1->SaveAs(OutputPngFile_XY);
-  c1->SaveAs(OutputPdfFile_XY);
+  // TString OutputPdfFile_XY = "plots/Visu_event_XY_" + fileName + "_event" + to_string(eventNumber) + ".pdf";
+  // c1->SaveAs(OutputPdfFile_XY);
   
 }

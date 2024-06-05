@@ -1,0 +1,3 @@
+#!/bin/bash
+
+root -l 'DefineCSratio.cc("/home/girardcarillo/Workdir/Workdir_TT/Simus_DBD/","2.8MeVelectron50", 0)' -b -q && root -l 'DefineCSratio.cc("/home/girardcarillo/Workdir/Workdir_TT/Simus_DBD/","2.8MeVgamma50", 17)' -b -q && root -l 'DefineCSratio.cc("/home/girardcarillo/Workdir/Workdir_TT/Simus_DBD/","1.78MeVpositron50", 40)' -b -q && root -l 'DefineCSratio.cc("/home/girardcarillo/Workdir/Workdir_TT/Simus_DBD/","0.38MeV2xpositron50", 0)' -b -q && mv plots/Visu_event_CSratio_2.8MeVelectron50_event0.pdf plots/Visu_event_CSratio_2.8MeVgamma50_event17.pdf plots/Visu_event_CSratio_1.78MeVpositron50_event40.pdf plots/Visu_event_CSratio_0.38MeV2xpositron50_event0.pdf plots/events_paper 

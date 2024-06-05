@@ -1,4 +1,11 @@
-The main change for these data sets is the diameter (3mm) and spacing (1cm) of the fibres.
+Additional information in root output files.
+Photon creation process ("creationID")
+creationID = 0 (Scintillation)
+creationID = 1 (Cherenkov)
+creationID = 2 (Other)
+
+Fibre diameter (3mm)
+Fibre spacing (1cm)
 
 Detector material: 98% LAB, 2% paraffin wax detector.
 Detector: 4m long and 4m in diameter.

@@ -1,0 +1,47 @@
+struct EventData {
+  int event;
+  int fN;
+  double fiberx, fibery, fiberz;
+};
+
+void OpenRootFile(string path, string fileName, int eventNumber = 0) {
+  
+  string file = path + fileName + ".root";
+  const char * cfile = file.c_str();
+
+  // Open the input file
+  TFile *inputFile = new TFile(cfile, "read");
+
+  // Get the tree from the file
+  TTree *tree = (TTree*)inputFile->Get("Hits");
+
+  // Get the number of entries in the tree
+  // Ensure that the tree is not empty
+  int entries = tree ? tree->GetEntries() : 0;
+  
+  EventData eventData;
+
+  // Set branch addresses for the tree
+  tree->SetBranchAddress("fEvent", &eventData.event);
+  tree->SetBranchAddress("fX", &eventData.fiberx);
+  tree->SetBranchAddress("fY", &eventData.fibery);
+  tree->SetBranchAddress("fZ", &eventData.fiberz);
+  tree->SetBranchAddress("No", &eventData.fN);
+
+  // Loop over entries and fill the histogram
+  for (int i = 0; i < entries; i++) {
+    tree->GetEntry(i);
+
+    if (eventData.event == eventNumber) {
+
+      cout << eventData.event << " "
+	   << eventData.fiberx << " "
+	   << eventData.fibery << " "
+	   << eventData.fiberz << " " << endl;
+
+      // do stuff
+    }
+
+  }
+  
+}

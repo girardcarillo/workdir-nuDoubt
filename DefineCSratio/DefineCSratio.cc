@@ -12,20 +12,20 @@
 #include <chrono>
 #include <string>
 
+// create custom palette for CS ratio display
 void Perceptual_Colormap(TH2F *h, Double_t val_cut) {
   Double_t max     = h->GetMaximum();         // Histogram's maximum
   Double_t min     = h->GetMinimum();         // Histogram's minimum
   Double_t per_cut = (val_cut-min)/(max-min); // normalized value of val_cut
   Double_t eps     = (max-min)*0.00001;       // epsilon
  
-  // Definition of the two palettes below and above val_cut
   const Int_t Number = 4;
-  Double_t Red[Number]   = { 0., 1., 0., 1.};
-  Double_t Green[Number] = { 0., 0., 1., 0.};
-  Double_t Blue[Number]  = { 1., 1., 0., 0.};
-  Double_t Stops[Number] = { 0., per_cut, per_cut+0.03, 1. };
-   
-  Int_t nb= 256;
+  Double_t Red[Number]   = { 0.361, 0.925, 0.196, 0.008 };
+  Double_t Green[Number] = { 0.361, 0.929, 0.769, 0.051 };
+  Double_t Blue[Number]  = { 0.361, 0.00, 0.451, 0.369 };
+  Double_t Stops[Number] = { 0.0, 0.02, 0.16, 1.0 };
+
+  Int_t nb=50;
   h->SetContour(nb);
  
   TColor::CreateGradientColorTable(Number,Stops,Red,Green,Blue,nb);
@@ -109,6 +109,9 @@ void DefineCSratio(string path, string fileName, int eventNumber = 0) {
   double Y_value = 0.;
   double Z_value = 0.;
 
+  int numCher = 0;
+  int numScint = 0;
+
   // Loop over entries and fill the histogram
   for (int i = 0; i < entries; i++) {
     tree->GetEntry(i);
@@ -123,13 +126,15 @@ void DefineCSratio(string path, string fileName, int eventNumber = 0) {
       // else histogramXY->Fill(X_value, Y_value);
       
       // rotation or flipping or event if necessary, for display for paper
-      
+
       // define C/S ratio
       if (eventData.photonType == 1) {
+	numCher++;
 	if (fileName == "0.38MeV2xpositron50") Cerenkov->Fill(X_value*f-Y_value*f, X_value*f+Y_value*f);
       	else Cerenkov->Fill(X_value, Y_value);
       }
       else if (eventData.photonType == 2) {
+	numScint++;
 	if (fileName == "0.38MeV2xpositron50") Scintillation->Fill(X_value*f-Y_value*f, X_value*f+Y_value*f);
 	else Scintillation->Fill(X_value, Y_value);
       }
@@ -138,8 +143,8 @@ void DefineCSratio(string path, string fileName, int eventNumber = 0) {
 
   }
 
-  // Cerenkov->Divide(Scintillation);
-
+  // cout << "ratio " << (double)numCher/numScint << endl;
+  
   ratio = (TH2F*)Cerenkov->Clone("ratio");
   ratio->Divide(Scintillation);
 
@@ -154,9 +159,9 @@ void DefineCSratio(string path, string fileName, int eventNumber = 0) {
       nchit = Cerenkov->GetBinContent(binnum);
       nc = Scintillation->GetBinContent(binnum);
       ratio_value = nchit/nc;
-
+      
       // if(nchit == 0 && nc != 0) heffprojStripY[j]->SetBinContent(binnum, 1e-6);  // small number instead of 0
-      if(ratio_value == 0) ratio->SetBinContent(binnum, 1.1e-5);  // small number instead of 0
+      if(ratio_value == 0) ratio->SetBinContent(binnum, 1e-6);  // small number instead of 0
 
     }
   }
@@ -260,10 +265,10 @@ void DefineCSratio(string path, string fileName, int eventNumber = 0) {
 
   ratio->GetXaxis()->SetNdivisions(6);
   ratio->GetYaxis()->SetNdivisions(6);
-  ratio->GetZaxis()->SetNdivisions(4);
+  ratio->GetZaxis()->SetNdivisions(6);
   
   Perceptual_Colormap(ratio, 0.);
-  ratio->GetZaxis()->SetRangeUser(0, 0.3);
+  ratio->GetZaxis()->SetRangeUser(0, 1);
 
   ratio->Draw("colz");
   if (fileName != "2.8MeVelectron50") ratio->Draw("col");
@@ -284,7 +289,7 @@ void DefineCSratio(string path, string fileName, int eventNumber = 0) {
 
   if (fileName == "2.8MeVelectron50") {
     TPaveText *pt = new TPaveText(-14.6,-39.3,14.9,-33.1);
-    pt->AddText("Hits on fibres");
+    pt->AddText("C/S ratio");
     pt->SetTextSize(titleSize-0.01);
     pt->SetTextFont(ratio->GetXaxis()->GetTitleFont());
     pt->SetTextColor(ratio->GetXaxis()->GetTitleColor());
@@ -310,9 +315,9 @@ void DefineCSratio(string path, string fileName, int eventNumber = 0) {
 
   palette2->Draw("same");
 
-  TString OutputPngFile_XY = "plots/Visu_event_CSratio_" + fileName + "_event" + to_string(eventNumber) + ".png";
-  // TString OutputPdfFile_XY = "plots/Visu_event_CSratio_" + fileName + "_event" + to_string(eventNumber) + ".pdf";
-  c1->SaveAs(OutputPngFile_XY);
-  // c1->SaveAs(OutputPdfFile_XY);
+  // TString OutputPngFile_XY = "plots/Visu_event_CSratio_" + fileName + "_event" + to_string(eventNumber) + ".png";
+  // c1->SaveAs(OutputPngFile_XY);
+  TString OutputPdfFile_XY = "plots/Visu_event_CSratio_" + fileName + "_event" + to_string(eventNumber) + ".pdf";
+  c1->SaveAs(OutputPdfFile_XY);
 
 }
