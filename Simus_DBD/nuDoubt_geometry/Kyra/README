@@ -1,17 +1,17 @@
 Sims by Kyra
 
-Fibre diameter (1mm)
-Fibre spacing (2cm)
+Fibre diameter (3mm)
+Fibre spacing (1cm)
 
 Detector material: 98% LAB, 2% paraffin wax detector.
-Detector: 4000mm long and 1600mm in diameter.
-Fibre array: hex z-parallel
+Detector: 3m long and 3m in diameter.
+Fibre array: hex z-parallel, 1cm fibre pitch. Fibre diameter = 3mm.
 
 Scattering Length = 2mm
 Absorption Length = 2m
 Scintillation Yield = 9000 photons/MeV
 
-particle gun: position in inner detector, random direction, energy between 0 and 5 MeV
+particle gun: (6.2 mm, 4.2 mm, 0mm) random direction
 
 The final number in the file name is the number of events in the file.
 
